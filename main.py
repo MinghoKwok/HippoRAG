@@ -78,6 +78,7 @@ def main():
     parser.add_argument('--openie_mode', choices=['online', 'offline'], default='online',
                         help="OpenIE mode, offline denotes using VLLM offline batch mode for indexing, while online denotes")
     parser.add_argument('--save_dir', type=str, default='outputs', help='Save directory')
+    parser.add_argument("--skip_graph", action="store_true", help="Skip OpenIE graph extraction.")
     args = parser.parse_args()
 
     dataset_name = args.dataset
@@ -133,7 +134,11 @@ def main():
 
     hipporag = HippoRAG(global_config=config)
 
-    hipporag.index(docs)
+    print(f"[Index] skip_graph = {args.skip_graph}")
+    hipporag.index(
+    docs,
+    skip_graph=args.skip_graph
+)
 
     # Retrieval and QA
     hipporag.rag_qa(queries=all_queries, gold_docs=gold_docs, gold_answers=gold_answers)
