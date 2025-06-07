@@ -212,7 +212,7 @@ class HippoRAG:
 
         assert False, logger.info('Done with OpenIE, run online indexing for future retrieval.')
 
-    def index(self, docs: List[str]):
+    def index(self, docs: List[str], skip_graph=False):
         """
         Indexes the given documents based on the HippoRAG 2 framework which generates an OpenIE knowledge graph
         based on the given documents and encodes passages, entities and facts separately for later retrieval.
@@ -221,6 +221,10 @@ class HippoRAG:
             docs : List[str]
                 A list of documents to be indexed.
         """
+        if skip_graph:
+            print("[HippoRAG] Skipping graph construction (OpenIE) as requested.")
+            self.chunk_embedding_store.insert_strings(docs)
+            return
 
         logger.info(f"Indexing Documents")
 
@@ -721,6 +725,8 @@ class HippoRAG:
             query_solution.answer = pred_ans
             queries_solutions.append(query_solution)
 
+        print(all_response_message)
+        
         return queries_solutions, all_response_message, all_metadata
 
     def add_fact_edges(self, chunk_ids: List[str], chunk_triples: List[Tuple]):
