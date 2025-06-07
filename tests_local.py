@@ -58,9 +58,15 @@ def main():
          "Montebello is a part of Rockland County."]
     ]
 
-    print(hipporag.rag_qa(queries=queries,
-                                  gold_docs=gold_docs,
-                                  gold_answers=answers)[-2:])
+    results = hipporag.rag_qa(queries=queries, gold_docs=gold_docs, gold_answers=answers)[-2:]
+
+    print(results)
+
+    # 保存到 save_dir 中
+    os.makedirs(save_dir, exist_ok=True)
+    with open(os.path.join(save_dir, "eval_result.txt"), "w") as f:
+        f.write(str(results))
+
 
     # # Startup a HippoRAG instance
     # hipporag = HippoRAG(save_dir=save_dir,
