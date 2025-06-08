@@ -106,32 +106,51 @@ def main():
         rag = local_rag if route == "local" else global_rag
         print(f"\n🔍 Routing subquery '{subquery}' to {route.upper()} DB")
 
-        # 只执行 QA 不带评估
         try:
-            answer = rag.rag_qa([subquery])[0][0]
+            answer_obj = rag.rag_qa([subquery])[0][0]
+            answer_text = getattr(answer_obj, "answer", answer_obj)
+            docs = getattr(answer_obj, "docs", [])
+            doc_scores = getattr(answer_obj, "doc_scores", [])
         except Exception as e:
-            answer = f"Error: {str(e)}"
+            answer_text = f"Error: {str(e)}"
+            docs, doc_scores = [], []
 
         results.append({
             "subquery": subquery,
             "routing": route,
-            "answer": answer,
+            "answer": answer_text,
+            "docs": docs,
+            "doc_scores": doc_scores,
         })
-        fused_answer_texts.append(f"{subquery} → {answer}")
+        fused_answer_texts.append(f"{subquery} → {answer_text}")
 
-    # 保存结果
+    # 保存结果 txt（可读格式）
     os.makedirs(save_dir, exist_ok=True)
-    with open(os.path.join(save_dir, "routing_multihop_results.txt"), "w") as f:
+    txt_path = os.path.join(save_dir, "routing_multihop_results.txt")
+    with open(txt_path, "w") as f:
         f.write(f"Multi-hop query: {multi_hop_query}\n\n")
         for r in results:
             f.write(f"Subquery: {r['subquery']}\n")
             f.write(f"Routing: {r['routing']}\n")
-            f.write(f"Answer: {r['answer']}\n\n")
+            f.write(f"Answer: {r['answer']}\n")
+            for i, doc in enumerate(r["docs"]):
+                f.write(f"Doc[{i}]: {doc} (score: {r['doc_scores'][i]})\n")
+            f.write("\n")
         f.write("Fused answer chain:\n")
         for step in fused_answer_texts:
             f.write(step + "\n")
 
-    print("\n✅ Results saved to:", os.path.join(save_dir, "routing_multihop_results.txt"))
+    # 保存结构化 JSONL
+    jsonl_path = os.path.join(save_dir, "routing_multihop_results.jsonl")
+    with open(jsonl_path, "w") as f:
+        for r in results:
+            r["doc_scores"] = r["doc_scores"].tolist() if hasattr(r["doc_scores"], "tolist") else r["doc_scores"]
+            json.dump(r, f)
+            f.write("\n")
+
+    print("\n✅ Results saved to:")
+    print(f"   - {txt_path}")
+    print(f"   - {jsonl_path}")
 
 
 if __name__ == "__main__":
