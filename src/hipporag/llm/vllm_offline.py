@@ -51,7 +51,7 @@ class VLLMOffline:
         self.client = LLM(model=model_name, tensor_parallel_size=tensor_parallel_size, pipeline_parallel_size=pipeline_parallel_size,
                           seed=kwargs.get('seed', 0), dtype='auto', max_seq_len_to_capture=max_model_len, enable_prefix_caching=True,
                           enforce_eager=False, gpu_memory_utilization=kwargs.get('gpu_memory_utilization', 0.6),
-                          max_model_len=max_model_len, quantization=kwargs.get('quantization', None), load_format=kwargs.get('load_format', 'auto'), trust_remote_code=True)
+                          max_model_len=max_model_len, max_num_seqs=4, quantization=kwargs.get('quantization', None), load_format=kwargs.get('load_format', 'auto'), trust_remote_code=True)
         
         self.tokenizer = self.client.get_tokenizer()
         if cache_filename is None:
