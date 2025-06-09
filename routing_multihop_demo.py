@@ -47,7 +47,7 @@ Only output valid JSON. Do not add any explanation."""
 
 def route_query(query: str) -> str:
     """简单规则路由"""
-    if "Cinderella" in query or "prince" in query:
+    if "Cinderella" in query or "Erik" in query:
         return "local"
     else:
         return "global"
@@ -62,12 +62,12 @@ def main():
     # 数据库内容
     local_docs = [
         "George Rankin is a politician.",
+        "Erik Hort's birthplace is Montebello.",
         "Cinderella attended the royal ball.",
+        "When the slipper fit perfectly, Cinderella was reunited with the prince.",
         "The prince used the lost glass slipper to search the kingdom."
     ]
     global_docs = [
-        "When the slipper fit perfectly, Cinderella was reunited with the prince.",
-        "Erik Hort's birthplace is Montebello.",
         "Montebello is a part of Rockland County.",
         "Rockland County is located in New York.",
         "New York is a state in the United States."
