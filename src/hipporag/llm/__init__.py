@@ -9,8 +9,10 @@ from .base import BaseLLM
 logger = get_logger(__name__)
 
 
+from .vllm_offline import VLLMOffline
+from .openai_gpt import CacheOpenAI
+
 def _get_llm_class(config: BaseConfig):
-    if config.llm_base_url is not None and 'localhost' in config.llm_base_url and os.getenv('OPENAI_API_KEY') is None:
-        os.environ['OPENAI_API_KEY'] = 'sk-'
+    if config.llm_base_url and "localhost" in config.llm_base_url:
+        return VLLMOffline(global_config=config)
     return CacheOpenAI.from_experiment_config(config)
-    

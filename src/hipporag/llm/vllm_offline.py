@@ -73,7 +73,7 @@ class VLLMOffline:
             "prompt_tokens": prompt_tokens,
             "completion_tokens": completion_tokens
         }
-        return response, metadata
+        return response, metadata, False
 
     def batch_infer(self, messages_list: List[List[TextChatMessage]], max_tokens=2048, json_template=None):
         if len(messages_list) > 1:
@@ -98,4 +98,4 @@ class VLLMOffline:
             "completion_tokens": sum(all_completion_tokens),
             "num_request": len(messages_list)
         }
-        return all_responses, metadata
+        return all_responses, metadata, False
