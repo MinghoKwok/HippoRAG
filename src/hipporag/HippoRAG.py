@@ -130,12 +130,12 @@ class HippoRAG:
 
         self.graph = self.initialize_graph()
 
-        if self.global_config.openie_mode == 'offline':
-            self.embedding_model = None
-        else:
-            self.embedding_model: BaseEmbeddingModel = _get_embedding_model_class(
-                embedding_model_name=self.global_config.embedding_model_name)(global_config=self.global_config,
-                                                                              embedding_model_name=self.global_config.embedding_model_name)
+        # if self.global_config.openie_mode == 'offline':
+        #     self.embedding_model = None
+        # else:
+        self.embedding_model: BaseEmbeddingModel = _get_embedding_model_class(
+            embedding_model_name=self.global_config.embedding_model_name)(global_config=self.global_config,
+                                                                            embedding_model_name=self.global_config.embedding_model_name)
         self.chunk_embedding_store = EmbeddingStore(self.embedding_model,
                                                     os.path.join(self.working_dir, "chunk_embeddings"),
                                                     self.global_config.embedding_batch_size, 'chunk')
@@ -210,7 +210,7 @@ class HippoRAG:
         if self.global_config.save_openie:
             self.save_openie_results(all_openie_info)
 
-        assert False, logger.info('Done with OpenIE, run online indexing for future retrieval.')
+        logger.info('Done with OpenIE, run online indexing for future retrieval.')
 
     def index(self, docs: List[str], skip_graph=False):
         """

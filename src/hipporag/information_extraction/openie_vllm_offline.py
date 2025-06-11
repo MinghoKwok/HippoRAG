@@ -7,15 +7,21 @@ from ..utils.misc_utils import NerRawOutput, TripleRawOutput
 from ..utils.logging_utils import get_logger
 from ..prompts import PromptTemplateManager
 from ..llm.vllm_offline import VLLMOffline
+from ..llm.openai_gpt import CacheOpenAI
+import os
 
 logger = get_logger(__name__)
 
 
 class VLLMOfflineOpenIE(OpenIE):
     def __init__(self, global_config):
-
+        # set mock openai api key avoid openai api key error
+        if global_config.llm_base_url and 'localhost' in global_config.llm_base_url:
+            os.environ['OPENAI_API_KEY'] = 'sk-fake-local-key'                
+        # Original code
         self.prompt_template_manager = PromptTemplateManager(role_mapping={"system": "system", "user": "user", "assistant": "assistant"})
-        self.llm_model = VLLMOffline(global_config)
+        # self.llm_model = VLLMOffline(global_config)
+        self.llm_model = CacheOpenAI.from_experiment_config(global_config)
 
     def batch_openie(self, chunks: Dict[str, ChunkInfo]) -> Tuple[Dict[str, NerRawOutput], Dict[str, TripleRawOutput]]:
         """

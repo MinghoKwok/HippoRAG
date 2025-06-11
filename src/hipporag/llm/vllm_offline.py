@@ -50,7 +50,7 @@ class VLLMOffline:
         self.model_name = model_name
         self.client = LLM(model=model_name, tensor_parallel_size=tensor_parallel_size, pipeline_parallel_size=pipeline_parallel_size,
                           seed=kwargs.get('seed', 0), dtype='auto', max_seq_len_to_capture=max_model_len, enable_prefix_caching=True,
-                          enforce_eager=False, gpu_memory_utilization=kwargs.get('gpu_memory_utilization', 0.6),
+                          enforce_eager=False, gpu_memory_utilization=kwargs.get('gpu_memory_utilization', 0.95),
                           max_model_len=max_model_len, max_num_seqs=4, quantization=kwargs.get('quantization', None), load_format=kwargs.get('load_format', 'auto'), trust_remote_code=True)
         
         self.tokenizer = self.client.get_tokenizer()
@@ -76,6 +76,18 @@ class VLLMOffline:
         return response, metadata, False
 
     def batch_infer(self, messages_list: List[List[TextChatMessage]], max_tokens=2048, json_template=None):
+        # 结构检查
+        for i, messages in enumerate(messages_list):
+            assert isinstance(messages, list), f"Error: messages[{i}] is not a list: {type(messages)}"
+            for j, m in enumerate(messages):
+                assert isinstance(m, dict), f"Error: messages[{i}][{j}] is not a dict: {type(m)}"
+                assert "content" in m, f"Error: messages[{i}][{j}] missing 'content'"
+                assert isinstance(m["content"], str), f"Error: messages[{i}][{j}]['content'] not str: {type(m['content'])}"
+                tokens = self.tokenizer.encode(m["content"])
+                if len(tokens) > 4000:
+                    print(f"[Warning] Prompt {i}.{j} too long: {len(tokens)} tokens")
+
+        # Original code
         if len(messages_list) > 1:
             logger.info(f"Calling VLLM offline, # of messages {len(messages_list)}")
 

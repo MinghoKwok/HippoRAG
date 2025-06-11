@@ -1,0 +1,15 @@
+CUDA_VISIBLE_DEVICES=0,1 \
+CUDA_LAUNCH_BLOCKING=1 \       # 开启同步错误定位
+HF_HOME=/common/users/mg1998/hf_cache \  # 避免下载 cache 冲突
+python main.py \
+--dataset musique \            # 使用 musique 数据集
+--llm_base_url http://localhost:8001/v1 \  # 本地 vLLM 服务
+--llm_name /common/users/mg1998/models/Meta-Llama-3-8B-Instruct \ # llama3 路径
+--embedding_name nvidia/NV-Embed-v2 \   # 嵌入模型
+
+CUDA_VISIBLE_DEVICES=4,5 CUDA_LAUNCH_BLOCKING=1 HF_HOME=/common/users/mg1998/hf_cache python main.py --dataset musique --llm_base_url http://localhost:8001/v1 --llm_name /common/users/mg1998/models/Meta-Llama-3-8B-Instruct --embedding_name nvidia/NV-Embed-v2
+
+# 启动 vLLM 服务
+CUDA_VISIBLE_DEVICES=2,3 VLLM_WORKER_MULTIPROC_METHOD=spawn HF_HOME=/common/users/mg1998/hf_cache vllm serve /common/users/mg1998/models/Meta-Llama-3-8B-Instruct   --tensor-parallel-size 2   --max-model-len 4096   --gpu-memory-utilization 0.95   --port 8001
+
+
