@@ -1,0 +1,25 @@
+CUDA_VISIBLE_DEVICES=2,3 VLLM_WORKER_MULTIPROC_METHOD=spawn HF_HOME=/common/users/mg1998/hf_cache vllm serve /common/users/mg1998/models/Meta-Llama-3-8B-Instruct   --tensor-parallel-size 2   --max-model-len 4096   --gpu-memory-utilization 0.95   --port 8001 --enforce-eager
+
+
+CUDA_VISIBLE_DEVICES=0,1,2,3 VLLM_WORKER_MULTIPROC_METHOD=spawn HF_HOME=/common/users/mg1998/hf_cache OPENAI_API_KEY='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' dataset=musique  python main.py --dataset $dataset --llm_name /common/users/mg1998/models/Meta-Llama-3-8B-Instruct --openie_mode offline --skip_graph
+
+
+
+
+
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+export HF_HOME=/common/users/mg1998/hf_cache
+export OPENAI_API_KEY='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'
+dataset=sample  # or any other dataset under `reproduce/dataset`
+# Run OpenAI model
+python main.py --dataset $dataset --llm_base_url https://api.openai.com/v1 --llm_name gpt-4o-mini --embedding_name nvidia/NV-Embed-v2
+
+
+
+
+
+
+
+
+
+

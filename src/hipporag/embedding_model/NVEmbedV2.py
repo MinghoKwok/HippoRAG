@@ -65,7 +65,7 @@ class NVEmbedV2EmbeddingModel(BaseEmbeddingModel):
     #     # Adds EOS token to each text
     #     return [text + self.embedding_model.tokenizer.eos_token for text in texts]
 
-    def batch_encode(self, texts: List[str], **kwargs) -> None:
+    def batch_encode(self, texts: List[str], batch_size: int = 8, **kwargs) -> None:
         if isinstance(texts, str): texts = [texts]
 
         params = deepcopy(self.embedding_config.encode_params)
@@ -76,7 +76,7 @@ class NVEmbedV2EmbeddingModel(BaseEmbeddingModel):
                 params["instruction"] = f"Instruct: {kwargs['instruction']}\nQuery: "
             # del params["instruction"]
 
-        batch_size = params.pop("batch_size", 16)
+        batch_size = params.pop("batch_size", batch_size)
 
         logger.debug(f"Calling {self.__class__.__name__} with:\n{params}")
         if len(texts) <= batch_size:
