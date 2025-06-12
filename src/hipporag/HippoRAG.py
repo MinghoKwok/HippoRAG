@@ -32,6 +32,7 @@ from .utils.misc_utils import NerRawOutput, TripleRawOutput
 from .utils.embed_utils import retrieve_knn
 from .utils.typing import Triple
 from .utils.config_utils import BaseConfig
+import pdb
 
 logger = logging.getLogger(__name__)
 
@@ -248,6 +249,9 @@ class HippoRAG:
 
         ner_results_dict, triple_results_dict = reformat_openie_results(all_openie_info)
 
+        print(f"chunk_to_rows: {len(chunk_to_rows)}")
+        print(f"ner_results_dict: {len(ner_results_dict)}")
+        print(f"triple_results_dict: {len(triple_results_dict)}")
         assert len(chunk_to_rows) == len(ner_results_dict) == len(triple_results_dict)
 
         # prepare data_store
@@ -518,6 +522,9 @@ class HippoRAG:
                 q.gold_answers = list(gold_answers[idx])
                 if gold_docs is not None:
                     q.gold_docs = gold_docs[idx]
+            
+            if hasattr(self, "fallback_count"):
+                logger.info(f"[Summary] Total fallback to DPR: {self.fallback_count}")
 
             return queries_solutions, all_response_message, all_metadata, overall_retrieval_result, overall_qa_results
         else:
@@ -1482,12 +1489,30 @@ class HippoRAG:
 
         #Combining phrase and passage scores into one array for PPR
         node_weights = phrase_weights + passage_weights
+        # 如果 node_weights 全为 0，则设置第一个节点权重为 1.0
+        # pdb.set_trace()
+        if np.sum(node_weights) == 0:
+            print("[Warning] node_weights are all zero. Fallback to node 0.")
+            node_weights[0] = 1.0       # 设置第一个节点权重为 1.0 # Todo: fallback to dpr
 
         #Recording top 30 facts in linking_score_map
         if len(linking_score_map) > 30:
             linking_score_map = dict(sorted(linking_score_map.items(), key=lambda x: x[1], reverse=True)[:30])
 
-        assert sum(node_weights) > 0, f'No phrases found in the graph for the given facts: {top_k_facts}'
+        # assert sum(node_weights) > 0, f'No phrases found in the graph for the given facts: {top_k_facts}'
+        # === Fallback if node_weights sum to zero ===
+        # if np.sum(node_weights) == 0:
+        #     non_zero_nodes = [(i, w) for i, w in enumerate(node_weights) if w > 0]
+        #     logger.warning(f"[Fallback to DPR] PPR reset vector is zero. query: {query}")
+        #     logger.debug(f"[Debug] Non-zero node weights: {len(non_zero_nodes)} / {len(node_weights)} | Top: {non_zero_nodes[:5]}")
+            
+        #     # fallback counter (optional)
+        #     if not hasattr(self, "fallback_count"):
+        #         self.fallback_count = 0
+        #     self.fallback_count += 1
+
+        #     return self.graph_search_with_dpr(query, top_k_facts=top_k_facts)
+
 
         #Running PPR algorithm based on the passage and phrase weights previously assigned
         ppr_start = time.time()
